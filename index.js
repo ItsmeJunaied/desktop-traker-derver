@@ -24,6 +24,8 @@ let screenshotInterval;
 
 connectDB();
 
+const port = process.env.PORT || 3000; // Ensure the port is defined
+
 app.post("/start", (req, res) => {
   if (!screenshotInterval) {
     screenshotInterval = setInterval(async () => {
