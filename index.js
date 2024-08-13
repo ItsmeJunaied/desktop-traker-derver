@@ -5,7 +5,6 @@ const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
 const connectDB = require("./db");
-const { timeStamp } = require("console");
 const cloudinary = require("cloudinary").v2;
 const app = express();
 require("dotenv").config();
@@ -13,7 +12,8 @@ require("dotenv").config();
 app.use(cors());
 app.use(express.json());
 
-const port = process.env.PORT | 3000;
+const port = process.env.PORT || 3000;
+connectDB();
 
 cloudinary.config({
   cloud_name: process.env.cloudinary_Name,
@@ -25,7 +25,6 @@ console.log(process.env.cloudinary_Name);
 
 let screenshotInterval;
 
-connectDB();
 
 const ScreenshotSchema = new mongoose.Schema({
   url: String,
