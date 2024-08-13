@@ -9,7 +9,13 @@ const cloudinary = require("cloudinary").v2;
 const app = express();
 require("dotenv").config();
 
-app.use(cors());
+const corsOptions = {
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  credentials: true,
+  optionSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 cloudinary.config({
