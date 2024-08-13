@@ -12,9 +12,6 @@ require("dotenv").config();
 app.use(cors());
 app.use(express.json());
 
-const port = process.env.PORT || 3000;
-connectDB();
-
 cloudinary.config({
   cloud_name: process.env.cloudinary_Name,
   api_key: process.env.cloudinary_API_Key,
@@ -25,12 +22,7 @@ console.log(process.env.cloudinary_Name);
 
 let screenshotInterval;
 
-
-const ScreenshotSchema = new mongoose.Schema({
-  url: String,
-  timestamp: Date,
-});
-const Screenshot = mongoose.model("Screenshots", ScreenshotSchema);
+connectDB();
 
 app.post("/start", (req, res) => {
   if (!screenshotInterval) {
@@ -91,6 +83,12 @@ app.get("/screenshotData", async (req, res) => {
 app.get("/", (req, res) => {
   res.send("Server is live");
 });
+
+const ScreenshotSchema = new mongoose.Schema({
+  url: String,
+  timestamp: Date,
+});
+const Screenshot = mongoose.model("Screenshots", ScreenshotSchema);
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
