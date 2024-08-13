@@ -24,7 +24,7 @@ cloudinary.config({
   api_secret: process.env.cloudinary_Secret_Key,
 });
 
-console.log(process.env.cloudinary_Name);
+// console.log(process.env.cloudinary_Name);
 
 let screenshotInterval;
 
@@ -32,61 +32,71 @@ connectDB();
 
 const port = process.env.PORT || 3000; // Ensure the port is defined
 
-app.post("/start", (req, res) => {
-  if (!screenshotInterval) {
-    screenshotInterval = setInterval(async () => {
-      try {
-        const img = await screenshot();
-        const timestamp = new Date().toISOString().replace(/[-:.]/g, "");
-        const filePath = path.join(
-          __dirname,
-          `screenshots/screenshot-${timestamp}.jpg`
-        );
-
-        fs.mkdirSync(path.dirname(filePath), { recursive: true });
-        fs.writeFileSync(filePath, img);
-
-        // Upload to Cloudinary
-        const result = await cloudinary.uploader.upload(filePath);
-
-        // Save URL to MongoDB
-        const screenshotDoc = new Screenshot({
-          url: result.secure_url,
-          timestamp: new Date(),
-        });
-
-        await screenshotDoc.save();
-
-        console.log(`Screenshot uploaded and saved: ${result.secure_url}`);
-
-        // Optionally delete the local file
-        fs.unlinkSync(filePath);
-      } catch (err) {
-        console.error("Error taking screenshot or uploading:", err);
-      }
-    }, 20000); // 180000 ms = 3 minutes
-  }
-  res.json({ message: "Screenshot process started" });
-});
-
-app.post("/stop", (req, res) => {
-  if (screenshotInterval) {
-    clearInterval(screenshotInterval);
-    screenshotInterval = null;
-  }
-  res.json({ message: "Screenshot process stopped" });
-});
-
-app.get("/screenshotData", async (req, res) => {
+async function run() {
   try {
-    const screenshotData = await Screenshot.find().sort({ timestamp: -1 });
-    res.json(screenshotData);
-  } catch (error) {
-    // Log and return an error response
-    console.error("Error retrieving screenshot data:", error);
-    res.status(500).json({ error: "Failed to retrieve the data" });
+    app.post("/start", (req, res) => {
+      if (!screenshotInterval) {
+        screenshotInterval = setInterval(async () => {
+          try {
+            const img = await screenshot();
+            const timestamp = new Date().toISOString().replace(/[-:.]/g, "");
+            const filePath = path.join(
+              __dirname,
+              `screenshots/screenshot-${timestamp}.jpg`
+            );
+
+            fs.mkdirSync(path.dirname(filePath), { recursive: true });
+            fs.writeFileSync(filePath, img);
+
+            // Upload to Cloudinary
+            const result = await cloudinary.uploader.upload(filePath);
+
+            // Save URL to MongoDB
+            const screenshotDoc = new Screenshot({
+              url: result.secure_url,
+              timestamp: new Date(),
+            });
+
+            await screenshotDoc.save();
+
+            console.log(`Screenshot uploaded and saved: ${result.secure_url}`);
+
+            // Optionally delete the local file
+            fs.unlinkSync(filePath);
+          } catch (err) {
+            console.error("Error taking screenshot or uploading:", err);
+          }
+        }, 20000); // 180000 ms = 3 minutes
+      }
+      res.json({ message: "Screenshot process started" });
+    });
+
+    app.post("/stop", (req, res) => {
+      if (screenshotInterval) {
+        clearInterval(screenshotInterval);
+        screenshotInterval = null;
+      }
+      res.json({ message: "Screenshot process stopped" });
+    });
+
+    app.get("/screenshotData", async (req, res) => {
+      try {
+        const screenshotData = await Screenshot.find().sort({ timestamp: -1 });
+        res.json(screenshotData);
+      } catch (error) {
+        // Log and return an error response
+        console.error("Error retrieving screenshot data:", error);
+        res.status(500).json({ error: "Failed to retrieve the data" });
+      }
+    });
+
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!"
+    );
+  } finally {
   }
-});
+}
+run().catch(console.dir);
 
 app.get("/", (req, res) => {
   res.send("Server is live");
