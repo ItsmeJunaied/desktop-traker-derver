@@ -30,12 +30,15 @@ connectDB();
 
 const port = process.env.PORT || 3000;
 
-app.post("/start", async (req, res) => {
+const takeScreenshot = async () => {
   try {
     // Trigger the screenshot process manually, rather than using setInterval
     const img = await screenshot();
     const timestamp = new Date().toISOString().replace(/[-:.]/g, "");
-    const filePath = path.join(__dirname, `screenshots/screenshot-${timestamp}.jpg`);
+    const filePath = path.join(
+      __dirname,
+      `screenshots/screenshot-${timestamp}.jpg`
+    );
 
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
     fs.writeFileSync(filePath, img);
@@ -53,15 +56,25 @@ app.post("/start", async (req, res) => {
 
     fs.unlinkSync(filePath);
 
-    res.json({ message: "Screenshot captured and saved", url: result.secure_url });
+    res.json({
+      message: "Screenshot captured and saved",
+      url: result.secure_url,
+    });
   } catch (err) {
     console.error("Error taking screenshot or uploading:", err);
     res.status(500).json({ error: "Failed to capture or save screenshot" });
   }
+};
+app.post("/start", async (req, res) => {
+  takeScreenshot();
+  res.json({ message: "Screenshot process started" });
 });
+
+screenshotInterval = setInterval(takeScreenshot, 5000);
 
 app.post("/stop", (req, res) => {
   // In serverless environments, this might not be necessary
+  clearInterval(screenshotInterval);
   res.json({ message: "Stop functionality is not required in serverless" });
 });
 
