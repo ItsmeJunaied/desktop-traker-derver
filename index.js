@@ -56,7 +56,7 @@ const takeScreenshot = async () => {
 
     fs.unlinkSync(filePath);
 
-    res.json({
+    console.log({
       message: "Screenshot captured and saved",
       url: result.secure_url,
     });
