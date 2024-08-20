@@ -62,7 +62,7 @@ const takeScreenshot = async () => {
     });
   } catch (err) {
     console.error("Error taking screenshot or uploading:", err);
-    res.status(500).json({ error: "Failed to capture or save screenshot" });
+    // res.status(500).json({ error: "Failed to capture or save screenshot" });
   }
 };
 app.post("/start", async (req, res) => {
