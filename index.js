@@ -24,7 +24,7 @@ cloudinary.config({
   api_secret: process.env.cloudinary_Secret_Key,
 });
 
-let screenshotInterval;
+let screenshotInterval = null;
 
 connectDB();
 
@@ -32,8 +32,8 @@ const port = process.env.PORT || 3000;
 
 const takeScreenshot = async () => {
   try {
-    // Trigger the screenshot process manually, rather than using setInterval
-    const img = await screenshot();
+    // Trigger the screenshot process
+    const img = await screenshot(); // Use the screenshot package or function you have
     const timestamp = new Date().toISOString().replace(/[-:.]/g, "");
     const filePath = path.join(
       __dirname,
@@ -62,19 +62,22 @@ const takeScreenshot = async () => {
     });
   } catch (err) {
     console.error("Error taking screenshot or uploading:", err);
-    // res.status(500).json({ error: "Failed to capture or save screenshot" });
   }
 };
+
 app.post("/start", async (req, res) => {
-  takeScreenshot();
+  if (screenshotInterval) {
+    return res.json({ message: "Screenshot process is already running" });
+  }
+  screenshotInterval = setInterval(takeScreenshot, 5000);
   res.json({ message: "Screenshot process started" });
 });
 
-screenshotInterval = setInterval(takeScreenshot, 5000);
-
 app.post("/stop", (req, res) => {
-  // In serverless environments, this might not be necessary
-  clearInterval(screenshotInterval);
+  if (screenshotInterval) {
+    clearInterval(screenshotInterval);
+    screenshotInterval = null;
+  }
   res.json({ message: "Stop functionality is not required in serverless" });
 });
 
