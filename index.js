@@ -10,7 +10,7 @@ const app = express();
 require("dotenv").config();
 
 const corsOptions = {
-  origin: "*",
+  origin: "https://screenshottakerserver.vercel.app",
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   credentials: true,
   optionSuccessStatus: 200,
